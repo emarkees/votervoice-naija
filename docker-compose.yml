@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # In-memory session store for telephony IVR/USSD multi-turn calls
+  redis:
+    image: redis:7-alpine
+    container_name: votervoice-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # FastAPI AI & Telephony Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: votervoice-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - AT_USERNAME=${AT_USERNAME:-sandbox}
+      - AT_API_KEY=${AT_API_KEY:-sandbox_key}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      - redis
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # Next.js Frontend & 2G Feature-Phone Simulator
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: votervoice-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
