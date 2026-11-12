@@ -1,12 +1,13 @@
 {
-  "name": "votervoice naija",
+  "name": "votervoice-naija",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "node scripts/patch-magic-string.js"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0",
